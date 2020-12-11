@@ -57,4 +57,5 @@ func main() {
 	}
 
 	fmt.Println("Postgres connection ok!")
+	fmt.Println("Test")
 }
