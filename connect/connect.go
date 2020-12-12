@@ -2,7 +2,7 @@
 // Creates a successful connection to the postgres database //
 //////////////////////////////////////////////////////////////
 
-package main
+package connect
 
 import (
 	"database/sql"
@@ -22,7 +22,7 @@ type PsqlEnv struct {
 	dbname   string
 }
 
-func getPsqlenv() PsqlEnv {
+func GetPsqlenv() PsqlEnv {
 	err := godotenv.Load("psql.env")
 	if err != nil {
 		panic(err)
@@ -37,9 +37,8 @@ func getPsqlenv() PsqlEnv {
 	return PsqlConnEnv
 }
 
-func main() {
-	var Envs PsqlEnv = getPsqlenv()
-
+func ConnectToMasterDB() error {
+	var Envs PsqlEnv = GetPsqlenv()
 	psqlConnect := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		Envs.host, Envs.port, Envs.user, Envs.password, Envs.dbname)
@@ -47,15 +46,14 @@ func main() {
 	// Try open the psql db with the given information.
 	psqlDB, connectionError := sql.Open("postgres", psqlConnect)
 	if connectionError != nil {
-		panic(connectionError)
+		return connectionError
 	}
 	defer psqlDB.Close()
 
 	connectionError = psqlDB.Ping()
 	if connectionError != nil {
-		panic(connectionError)
+		return connectionError
 	}
 
-	fmt.Println("Postgres connection ok!")
-	fmt.Println("Test")
+	return connectionError
 }
