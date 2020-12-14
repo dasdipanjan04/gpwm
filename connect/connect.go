@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path"
 	"strconv"
 
 	"github.com/joho/godotenv"
@@ -23,7 +24,7 @@ type PsqlEnv struct {
 
 func GetPsqlenv() string {
 
-	err := godotenv.Load("psql.env")
+	err := godotenv.Load(path.Join(os.Getenv("HOME"), "go/src/gpwm/connect/psql.env"))
 	if err != nil {
 		panic(err)
 	}

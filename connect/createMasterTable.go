@@ -1,8 +1,6 @@
-package main
+package connect
 
 import (
-	"gpwm/connect"
-
 	_ "github.com/lib/pq"
 )
 
@@ -17,7 +15,7 @@ func CreateTable() {
 		is_active BOOL
 	  );`
 
-	db, err := connect.OpenDB()
+	db, err := OpenDB()
 	if err != nil {
 		panic(err)
 	}
@@ -27,9 +25,5 @@ func CreateTable() {
 		panic(err)
 	}
 
-	connect.CloseDB(db)
-}
-
-func main() {
-	CreateTable()
+	CloseDB(db)
 }
