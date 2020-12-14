@@ -11,7 +11,6 @@ import (
 	"strconv"
 
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 )
 
 type PsqlEnv struct {
@@ -22,38 +21,53 @@ type PsqlEnv struct {
 	dbname   string
 }
 
-func GetPsqlenv() PsqlEnv {
+func GetPsqlenv() string {
+
 	err := godotenv.Load("psql.env")
 	if err != nil {
 		panic(err)
 	}
-	var PsqlConnEnv PsqlEnv
-	PsqlConnEnv.host = os.Getenv("PSQLHOST")
-	portVal, err := strconv.Atoi(os.Getenv("PSQLPORT"))
-	PsqlConnEnv.port = portVal
-	PsqlConnEnv.user = os.Getenv("PSQLUSER")
-	PsqlConnEnv.password = os.Getenv("PSQLPASSWORD")
-	PsqlConnEnv.dbname = os.Getenv("PSQLDB")
-	return PsqlConnEnv
-}
 
-func ConnectToMasterDB() error {
-	var Envs PsqlEnv = GetPsqlenv()
+	portVal, err := strconv.Atoi(os.Getenv("PSQLPORT"))
+
 	psqlConnect := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
-		Envs.host, Envs.port, Envs.user, Envs.password, Envs.dbname)
+		os.Getenv("PSQLHOST"),
+		portVal,
+		os.Getenv("PSQLUSER"),
+		os.Getenv("PSQLPASSWORD"),
+		os.Getenv("PSQLDB"))
+	return psqlConnect
+}
+
+func OpenDB() (*sql.DB, error) {
+
+	psqlEnv := GetPsqlenv()
 
 	// Try open the psql db with the given information.
-	psqlDB, connectionError := sql.Open("postgres", psqlConnect)
+	psqlDB, connectionError := sql.Open("postgres", psqlEnv)
 	if connectionError != nil {
-		return connectionError
+		return nil, connectionError
 	}
-	defer psqlDB.Close()
+	return psqlDB, connectionError
+}
 
-	connectionError = psqlDB.Ping()
-	if connectionError != nil {
-		return connectionError
+func ConnectToMasterDB() (*sql.DB, error) {
+
+	psqlDb, err := OpenDB()
+	if err != nil {
+		panic(err)
 	}
 
-	return connectionError
+	err = psqlDb.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return psqlDb, err
+}
+
+func CloseDB(db *sql.DB) error {
+	err := db.Close()
+	return err
 }
