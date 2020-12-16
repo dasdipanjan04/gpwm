@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gpwm/connect"
 	"strconv"
 	"time"
@@ -20,5 +19,4 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Table Created")
 }
