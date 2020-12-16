@@ -6,6 +6,10 @@ import (
 )
 
 func main() {
-	connect.CreateTable()
+	db := connect.CreateMasterKeyTable()
+	err := connect.InsertMasterKeyDataToDB(db, "TesFN", "TestLN", "firsttest@test.test", "Test", true)
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println("Table Created")
 }

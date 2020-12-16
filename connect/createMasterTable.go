@@ -1,10 +1,14 @@
 package connect
 
 import (
+	"database/sql"
+	"strconv"
+	"time"
+
 	_ "github.com/lib/pq"
 )
 
-func CreateTable() {
+func CreateMasterKeyTable() *sql.DB {
 	createTable := `create table if not exists mastertable (
 		first_name TEXT NOT NULL,
 		last_name TEXT NOT NULL,
@@ -25,5 +29,20 @@ func CreateTable() {
 		panic(err)
 	}
 
-	CloseDB(db)
+	return db
+	//CloseDB(db)
+}
+
+func InsertMasterKeyDataToDB(db *sql.DB, first_name string, last_name string,
+	email string, master_key string, is_active bool) error {
+	insertStatement := `INSERT INTO mastertable (first_name, last_name, email, master_key, created_at, updated_at, is_active)
+		VALUES($1, $2, $3, $4, $5, $6, $7)`
+	time_now := time.Now().Unix()
+	created_at := strconv.FormatInt(time_now, 10)
+	updated_at := strconv.FormatInt(time_now, 10)
+	_, err := db.Exec(insertStatement, first_name, last_name, email, master_key, created_at, updated_at, is_active)
+	if err != nil {
+		panic(err)
+	}
+	return err
 }
