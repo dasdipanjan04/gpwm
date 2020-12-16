@@ -36,7 +36,8 @@ func CreateMasterKeyTable() *sql.DB {
 func InsertMasterKeyDataToDB(db *sql.DB, first_name string, last_name string,
 	email string, master_key string, is_active bool) error {
 	insertStatement := `INSERT INTO mastertable (first_name, last_name, email, master_key, created_at, updated_at, is_active)
-		VALUES($1, $2, $3, $4, $5, $6, $7)`
+		SELECT $1, $2, $3, $4, $5, $6, $7
+		WHERE NOT EXISTS (SELECT email FROM mastertable where(mastertable.email = $3));`
 	time_now := time.Now().Unix()
 	created_at := strconv.FormatInt(time_now, 10)
 	updated_at := strconv.FormatInt(time_now, 10)
