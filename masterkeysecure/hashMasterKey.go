@@ -35,15 +35,15 @@ func EncryptMasterKeyAES(data []byte, masterKey string) []byte {
 	return ciphertext
 }
 
-func DecryptAESMasterKey(data []byte, masterkey string) []byte {
+func DecryptAESMasterKey(data []byte, masterkey string) string {
 	key := GenerateMasterKeyHashSha256(masterkey)
 
-	block, err := aes.NewCipher(key[:])
+	cipherblock, err := aes.NewCipher(key[:])
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	gcm, err := cipher.NewGCM(block)
+	gcm, err := cipher.NewGCM(cipherblock)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -55,5 +55,5 @@ func DecryptAESMasterKey(data []byte, masterkey string) []byte {
 		log.Fatalln(err)
 	}
 
-	return plaintext
+	return string(plaintext)
 }
