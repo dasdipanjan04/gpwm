@@ -2,6 +2,8 @@ package connect
 
 import (
 	"database/sql"
+	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -22,30 +24,35 @@ func CreateMasterKeyTable() *sql.DB {
 
 	db, err := OpenDB()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
+		return nil
 	}
 
 	_, err = db.Exec(createTable)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
+		return nil
 	}
 
 	return db
-	//CloseDB(db)
 }
 
 func InsertMasterKeyDataToDB(db *sql.DB, first_name string, last_name string,
 	email string, master_key string, is_active bool) error {
+
 	insertStatement := `INSERT INTO mastertable (first_name, last_name, email, master_key, created_at, updated_at, is_active)
 		SELECT $1, $2, $3, $4, $5, $6, $7
 		WHERE NOT EXISTS (SELECT email FROM mastertable where(mastertable.email = $3));`
+
 	time_now := time.Now().Unix()
 	created_at := strconv.FormatInt(time_now, 10)
 	updated_at := strconv.FormatInt(time_now, 10)
+
 	_, err := db.Exec(insertStatement, first_name, last_name, email, master_key, created_at, updated_at, is_active)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
+
 	return err
 }
 
@@ -59,7 +66,32 @@ func UpdateInfo(db *sql.DB, id int, first_name string, last_name string,
 
 	_, err := db.Exec(updateStatement, id, first_name, last_name, email, master_key, created_at, updated_at, is_active)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	return err
+}
+
+// Resets master key in the database.
+func ResetMasterKey(db *sql.DB, email string, masterKey string) {
+
+	findIdByEmail := fmt.Sprintf(`SELECT id FROM mastertable WHERE email in (%s);`, email)
+
+	id := 0
+
+	err := db.QueryRow(findIdByEmail).Scan(&id)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	reserMasterKeyStatement := fmt.Sprintf(`UPDATE mastertable 
+	SET master_key = (%s)
+	WHERE id = (%d);`, masterKey, id)
+	_, err = db.Exec(reserMasterKeyStatement)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	log.Println("You have successfully reset your master key")
 }
