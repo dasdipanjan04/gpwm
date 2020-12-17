@@ -7,6 +7,7 @@ package connect
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"strconv"
@@ -48,6 +49,7 @@ func OpenDB() (*sql.DB, error) {
 	// Try open the psql db with the given information.
 	psqlDB, connectionError := sql.Open("postgres", psqlEnv)
 	if connectionError != nil {
+		log.Fatalln(connectionError)
 		return nil, connectionError
 	}
 	return psqlDB, connectionError
@@ -57,11 +59,13 @@ func ConnectToMasterDB() (*sql.DB, error) {
 
 	psqlDb, err := OpenDB()
 	if err != nil {
+		log.Fatalln(err)
 		panic(err)
 	}
 
 	err = psqlDb.Ping()
 	if err != nil {
+		log.Fatalln(err)
 		return nil, err
 	}
 
@@ -70,5 +74,8 @@ func ConnectToMasterDB() (*sql.DB, error) {
 
 func CloseDB(db *sql.DB) error {
 	err := db.Close()
+	if err != nil {
+		log.Fatalln(err)
+	}
 	return err
 }
