@@ -1,8 +1,13 @@
+////////////////////////////////////////////////////////////////////////////////
+// Manages various aspects e.g. insert, update, reset of the master key table //
+////////////////////////////////////////////////////////////////////////////////
+
 package connect
 
 import (
 	"database/sql"
 	"fmt"
+	"gpwm/connect"
 	"log"
 	"strconv"
 	"time"
@@ -22,7 +27,7 @@ func CreateMasterKeyTable() *sql.DB {
 		is_active BOOL
 	  );`
 
-	db, err := OpenDB()
+	db, err := connect.OpenDB()
 	if err != nil {
 		log.Fatalln(err)
 		return nil
