@@ -7,7 +7,7 @@ package connect
 import (
 	"database/sql"
 	"fmt"
-	"log"
+	"gpwm/internal/glogger"
 	"os"
 	"path"
 	"strconv"
@@ -27,7 +27,8 @@ func GetPsqlenv() string {
 
 	err := godotenv.Load(path.Join(os.Getenv("HOME"), "go/src/gpwm/connect/psql.env"))
 	if err != nil {
-		log.Fatalln(err)
+		glogger.Glog("connect:GetPsqlenv:Load ", err.Error())
+		return err.Error()
 	}
 
 	portVal, err := strconv.Atoi(os.Getenv("PSQLPORT"))
@@ -47,25 +48,25 @@ func OpenDB() (*sql.DB, error) {
 	psqlEnv := GetPsqlenv()
 
 	// Try open the psql db with the given information.
-	psqlDB, connectionError := sql.Open("postgres", psqlEnv)
-	if connectionError != nil {
-		log.Fatalln(connectionError)
-		return nil, connectionError
+	psqlDB, err := sql.Open("postgres", psqlEnv)
+	if err != nil {
+		glogger.Glog("connect:OpenDB:Open ", err.Error())
+		return nil, err
 	}
-	return psqlDB, connectionError
+	return psqlDB, err
 }
 
 func ConnectToMasterDB() (*sql.DB, error) {
 
 	psqlDb, err := OpenDB()
 	if err != nil {
-		log.Fatalln(err)
+		glogger.Glog("connect:ConnectToMasterDB:OpenDB ", err.Error())
 		panic(err)
 	}
 
 	err = psqlDb.Ping()
 	if err != nil {
-		log.Fatalln(err)
+		glogger.Glog("connect:ConnectToMasterDB:Ping ", err.Error())
 		return nil, err
 	}
 
@@ -75,7 +76,7 @@ func ConnectToMasterDB() (*sql.DB, error) {
 func CloseDB(db *sql.DB) error {
 	err := db.Close()
 	if err != nil {
-		log.Fatalln(err)
+		glogger.Glog("connect:CloseDB:Close ", err.Error())
 	}
 	return err
 }
