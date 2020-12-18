@@ -5,8 +5,8 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha256"
+	"gpwm/internal/glogger"
 	"io"
-	"log"
 )
 
 func GenerateMasterKeyHashSha256(password string) [sha256.Size]byte {
@@ -19,16 +19,16 @@ func EncryptMasterKeyAES(data []byte, password string) []byte {
 
 	cipherblock, err := aes.NewCipher(key[:])
 	if err != nil {
-		log.Fatalln(err)
+		glogger.Glog("masterkeysecure:EncryptMasterKeyAES ", err.Error())
 	}
 
 	gcm, err := cipher.NewGCM(cipherblock)
 	if err != nil {
-		log.Fatalln(err)
+		glogger.Glog("masterkeysecure:EncryptMasterKeyAES ", err.Error())
 	}
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		log.Fatalln(err)
+		glogger.Glog("masterkeysecure:EncryptMasterKeyAES ", err.Error())
 	}
 	ciphertext := gcm.Seal(nonce, nonce, data, nil)
 
@@ -40,19 +40,19 @@ func DecryptAESMasterKey(data []byte, password string) string {
 
 	cipherblock, err := aes.NewCipher(key[:])
 	if err != nil {
-		log.Fatalln(err)
+		glogger.Glog("masterkeysecure:DecryptAESMasterKey ", err.Error())
 	}
 
 	gcm, err := cipher.NewGCM(cipherblock)
 	if err != nil {
-		log.Fatalln(err)
+		glogger.Glog("masterkeysecure:DecryptAESMasterKey ", err.Error())
 	}
 
 	nonceSize := gcm.NonceSize()
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		log.Fatalln(err)
+		glogger.Glog("masterkeysecure:DecryptAESMasterKey ", err.Error())
 	}
 
 	return string(plaintext)
