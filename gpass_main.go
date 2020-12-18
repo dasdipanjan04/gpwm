@@ -1,10 +1,7 @@
 package main
 
 import (
-	"fmt"
 	mkm "gpwm/masterkeymanager"
-	"gpwm/masterkeysecure"
-	"log"
 )
 
 func main() {
@@ -25,20 +22,4 @@ func main() {
 	mkm.InsertMasterKeyDataToDB(db, "TestFN_14", "TestLN_14", "14test@test.test", "dvasdvavdsdv", "alltest", true)
 	mkm.InsertMasterKeyDataToDB(db, "TestFN_15", "TestLN_15", "15test@test.test", "fdfwrwer345fgrqtdfsda", "testpass", true)
 	mkm.InsertMasterKeyDataToDB(db, "TestFN_16", "TestLN_16", "16test@test.test", "adsfqwert4t114355", "trespass", true)
-
-	// Encrypt Decrypt Test:
-	encryptedText := masterkeysecure.EncryptMasterKeyAES([]byte("tesertewtertettest"), "pazsword")
-	dycryptText := masterkeysecure.DecryptAESMasterKey(encryptedText, "pazsword")
-	fmt.Println(dycryptText)
-
-	// Masterkey decrypt test:
-	email := "'1test@test.test'"
-	findmkByEmail := fmt.Sprintf(`SELECT master_key FROM mastertable WHERE email in (%s);`, email)
-	master_key := []byte("")
-	err := db.QueryRow(findmkByEmail).Scan(&master_key)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	fmt.Println(masterkeysecure.DecryptAESMasterKey(master_key, "pazsword"))
 }
