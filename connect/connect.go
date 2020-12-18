@@ -27,7 +27,7 @@ func GetPsqlenv() string {
 
 	err := godotenv.Load(path.Join(os.Getenv("HOME"), "go/src/gpwm/connect/psql.env"))
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	portVal, err := strconv.Atoi(os.Getenv("PSQLPORT"))

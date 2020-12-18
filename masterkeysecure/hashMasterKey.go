@@ -9,13 +9,13 @@ import (
 	"log"
 )
 
-func GenerateMasterKeyHashSha256(masterKey string) [sha256.Size]byte {
-	return sha256.Sum256([]byte(masterKey))
+func GenerateMasterKeyHashSha256(password string) [sha256.Size]byte {
+	return sha256.Sum256([]byte(password))
 }
 
-func EncryptMasterKeyAES(data []byte, masterKey string) []byte {
+func EncryptMasterKeyAES(data []byte, password string) []byte {
 
-	key := GenerateMasterKeyHashSha256(masterKey)
+	key := GenerateMasterKeyHashSha256(password)
 
 	cipherblock, err := aes.NewCipher(key[:])
 	if err != nil {
@@ -35,8 +35,8 @@ func EncryptMasterKeyAES(data []byte, masterKey string) []byte {
 	return ciphertext
 }
 
-func DecryptAESMasterKey(data []byte, masterkey string) string {
-	key := GenerateMasterKeyHashSha256(masterkey)
+func DecryptAESMasterKey(data []byte, password string) string {
+	key := GenerateMasterKeyHashSha256(password)
 
 	cipherblock, err := aes.NewCipher(key[:])
 	if err != nil {
