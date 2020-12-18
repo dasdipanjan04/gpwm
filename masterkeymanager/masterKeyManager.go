@@ -10,7 +10,6 @@ import (
 	"gpwm/connect"
 	"gpwm/internal/glogger"
 	"gpwm/masterkeysecure"
-	"log"
 	"strconv"
 	"time"
 
@@ -31,13 +30,13 @@ func CreateMasterKeyTable() *sql.DB {
 
 	db, err := connect.OpenDB()
 	if err != nil {
-		log.Fatalln(err)
+		glogger.Glog("masterkeymanager:CreateMasterKeyTable:OpenDB ", err.Error())
 		return nil
 	}
 
 	_, err = db.Exec(createTable)
 	if err != nil {
-		log.Fatalln(err)
+		glogger.Glog("masterkeymanager:CreateMasterKeyTable:Exec ", err.Error())
 		return nil
 	}
 
@@ -60,12 +59,9 @@ func InsertMasterKeyDataToDB(db *sql.DB, first_name string, last_name string,
 
 	_, err := db.Exec(insertStatement, first_name, last_name, email, encrypted_master_key, created_at, updated_at, is_active)
 	if err != nil {
-		fmt.Println(masterkeysecure.EncryptMasterKeyAES(master_key_byte, password))
-		log.Fatalln(err)
+		glogger.Glog("masterkeymanager:InsertMasterKeyDataToDB:Exec ", err.Error())
 		return
 	}
-
-	glogger.Glog("masterkeymanager:UpdateInfo ", "Row successfully inserted")
 }
 
 func UpdateInfo(db *sql.DB, id int, first_name string, last_name string,
@@ -78,10 +74,9 @@ func UpdateInfo(db *sql.DB, id int, first_name string, last_name string,
 
 	_, err := db.Exec(updateStatement, id, first_name, last_name, email, master_key, created_at, updated_at, is_active)
 	if err != nil {
-		log.Fatalln(err)
+		glogger.Glog("masterkeymanager:UpdateInfo:Exec ", err.Error())
 		return
 	}
-	log.Println("Successfully Updated.")
 }
 
 // Resets master key in the database.
@@ -93,7 +88,7 @@ func ResetMasterKey(db *sql.DB, email string, masterKey string) {
 
 	err := db.QueryRow(findIdByEmail).Scan(&id)
 	if err != nil {
-		log.Println(err)
+		glogger.Glog("masterkeymanager:ResetMasterKey:QueryRow ", err.Error())
 		return
 	}
 
@@ -103,9 +98,9 @@ func ResetMasterKey(db *sql.DB, email string, masterKey string) {
 
 	_, err = db.Exec(reserMasterKeyStatement)
 	if err != nil {
-		log.Println(err)
+		glogger.Glog("masterkeymanager:ResetMasterKey:Exec ", err.Error())
 		return
 	}
 
-	log.Println("You have successfully reset your master key")
+	glogger.Glog("masterkeymanager:ResetMasterKey ", "You have successfully reset your master key")
 }
