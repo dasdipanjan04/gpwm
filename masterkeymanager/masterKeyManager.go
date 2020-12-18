@@ -2,12 +2,13 @@
 // Manages various aspects e.g. insert, update, reset of the master key table //
 ////////////////////////////////////////////////////////////////////////////////
 
-package connect
+package masterkeymanager
 
 import (
 	"database/sql"
 	"fmt"
 	"gpwm/connect"
+	"gpwm/internal/glogger"
 	"gpwm/masterkeysecure"
 	"log"
 	"strconv"
@@ -64,7 +65,7 @@ func InsertMasterKeyDataToDB(db *sql.DB, first_name string, last_name string,
 		return
 	}
 
-	log.Println("Row successfully inserted")
+	glogger.Glog("masterkeymanager:UpdateInfo ", "Row successfully inserted")
 }
 
 func UpdateInfo(db *sql.DB, id int, first_name string, last_name string,
