@@ -8,11 +8,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"gpwm/connect"
-	"gpwm/internal/glogger"
-	"gpwm/masterkeysecure"
 	"strconv"
 	"time"
+
+	"github.com/gpwm/connect"
+	"github.com/gpwm/internal/glogger"
+	"github.com/gpwm/masterkeysecure"
 
 	_ "github.com/lib/pq"
 )

@@ -7,10 +7,11 @@ package connect
 import (
 	"database/sql"
 	"fmt"
-	"gpwm/internal/glogger"
 	"os"
 	"path"
 	"strconv"
+
+	"github.com/gpwm/internal/glogger"
 
 	"github.com/joho/godotenv"
 )

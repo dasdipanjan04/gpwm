@@ -1,7 +1,7 @@
 package main
 
 import (
-	mkm "gpwm/masterkeymanager"
+	mkm "github.com/gpwm/masterkeymanager"
 )
 
 func main() {
