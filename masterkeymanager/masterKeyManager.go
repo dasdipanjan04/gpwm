@@ -50,12 +50,15 @@ func InsertMasterKeyDataToDB(db *sql.DB, first_name string, last_name string,
 		SELECT $1, $2, $3, $4, $5, $6, $7
 		WHERE NOT EXISTS (SELECT email FROM mastertable where(mastertable.email = $3));`
 
+	master_key_byte := []byte(master_key)
+	encrypted_master_key, eerr := masterkeysecure.EncryptMasterKeyAES(master_key_byte, password)
+	if eerr != nil {
+		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKeyAES ", eerr.Error())
+	}
+
 	time_now := time.Now().Unix()
 	created_at := strconv.FormatInt(time_now, 10)
 	updated_at := strconv.FormatInt(time_now, 10)
-
-	master_key_byte := []byte(master_key)
-	encrypted_master_key := masterkeysecure.EncryptMasterKeyAES(master_key_byte, password)
 
 	_, err := db.Exec(insertStatement, first_name, last_name, email, encrypted_master_key, created_at, updated_at, is_active)
 	if err != nil {
@@ -80,23 +83,35 @@ func UpdateInfo(db *sql.DB, id int, first_name string, last_name string,
 }
 
 // Resets master key in the database.
-func ResetMasterKey(db *sql.DB, email string, masterKey string) {
+func ResetMasterKey(db *sql.DB, email string, password string, oldMasterKey string, newmasterKey string, masterKeylost bool) {
 
-	findIdByEmail := fmt.Sprintf(`SELECT id FROM mastertable WHERE email in (%s);`, email)
+	findIdByEmail := fmt.Sprintf(`SELECT id, master_key FROM mastertable WHERE email in (%s);`, email)
 
 	id := 0
-
-	err := db.QueryRow(findIdByEmail).Scan(&id)
+	oldMasterKeyFromTable := []byte("")
+	err := db.QueryRow(findIdByEmail).Scan(&id, &oldMasterKeyFromTable)
 	if err != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:QueryRow ", err.Error())
 		return
 	}
+	// decrypt oldmasterkey and compare
+	dycryptText, derr := masterkeysecure.DecryptAESMasterKey(oldMasterKeyFromTable, password)
+	if dycryptText != oldMasterKey || derr != nil {
+		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKey ", derr.Error())
+		return
+	}
 
-	reserMasterKeyStatement := fmt.Sprintf(`UPDATE mastertable
-	SET master_key = (%s)
-	WHERE id = (%d);`, masterKey, id)
+	// encrypt new master key.
+	encryptedText, eerr := masterkeysecure.EncryptMasterKeyAES([]byte(newmasterKey), password)
+	if eerr != nil {
+		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKeyAES ", eerr.Error())
+	}
 
-	_, err = db.Exec(reserMasterKeyStatement)
+	reserMasterKeyStatement := `UPDATE mastertable
+	SET master_key = $1
+	WHERE id = $2;`
+
+	_, err = db.Exec(reserMasterKeyStatement, encryptedText, id)
 	if err != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:Exec ", err.Error())
 		return
