@@ -7,7 +7,7 @@ import (
 	"crypto/sha256"
 	"io"
 
-	"github.com/gpwm/internal/glogger"
+	"github.com/dasdipanjan04/gpwm/internal/glogger"
 )
 
 func GenerateMasterKeyHashSha256(password string) [sha256.Size]byte {

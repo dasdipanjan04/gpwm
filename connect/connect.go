@@ -11,7 +11,7 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/gpwm/internal/glogger"
+	"github.com/dasdipanjan04/gpwm/internal/glogger"
 
 	"github.com/joho/godotenv"
 )

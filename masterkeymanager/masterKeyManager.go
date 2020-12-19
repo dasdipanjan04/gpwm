@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gpwm/connect"
-	"github.com/gpwm/internal/glogger"
-	"github.com/gpwm/masterkeysecure"
+	"github.com/dasdipanjan04/gpwm/connect"
+	"github.com/dasdipanjan04/gpwm/internal/glogger"
+	"github.com/dasdipanjan04/gpwm/masterkeysecure"
 
 	_ "github.com/lib/pq"
 )
