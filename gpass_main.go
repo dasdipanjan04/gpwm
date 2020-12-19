@@ -22,4 +22,6 @@ func main() {
 	mkm.InsertMasterKeyDataToDB(db, "TestFN_14", "TestLN_14", "14test@test.test", "dvasdvavdsdv", "alltest", true)
 	mkm.InsertMasterKeyDataToDB(db, "TestFN_15", "TestLN_15", "15test@test.test", "fdfwrwer345fgrqtdfsda", "testpass", true)
 	mkm.InsertMasterKeyDataToDB(db, "TestFN_16", "TestLN_16", "16test@test.test", "adsfqwert4t114355", "trespass", true)
+
+	mkm.ResetMasterKey(db, "'9test@test.test'", "cred", "eufztrqwiefuqgkjahfvkj", "dfgadjkhsfgkhjgqwolieutzo", false)
 }
