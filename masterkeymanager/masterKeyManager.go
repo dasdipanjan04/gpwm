@@ -6,6 +6,7 @@ package masterkeymanager
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"gpwm/connect"
 	"gpwm/internal/glogger"
@@ -96,11 +97,15 @@ func ResetMasterKey(db *sql.DB, email string, password string, oldMasterKey stri
 	}
 	// decrypt oldmasterkey and compare
 	dycryptText, derr := masterkeysecure.DecryptAESMasterKey(oldMasterKeyFromTable, password)
-	if dycryptText != oldMasterKey || derr != nil {
+	if derr != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKey ", derr.Error())
 		return
 	}
-
+	if dycryptText != oldMasterKey {
+		keyMismatchError := errors.New("Key doesn't match")
+		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKey ", keyMismatchError.Error())
+		return
+	}
 	// encrypt new master key.
 	encryptedText, eerr := masterkeysecure.EncryptMasterKeyAES([]byte(newmasterKey), password)
 	if eerr != nil {
