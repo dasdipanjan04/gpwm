@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/dasdipanjan04/gpwm/connect"
-	"github.com/dasdipanjan04/gpwm/internal/glogger"
+	"github.com/dasdipanjan04/gpwm/helper/glogger"
 	"github.com/dasdipanjan04/gpwm/masterkeysecure"
 
 	_ "github.com/lib/pq"
