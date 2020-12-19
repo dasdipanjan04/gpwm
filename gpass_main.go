@@ -1,6 +1,9 @@
 package main
 
 import (
+	"log"
+
+	"github.com/dasdipanjan04/gpwm/helper/gretry"
 	mkm "github.com/dasdipanjan04/gpwm/masterkeymanager"
 )
 
@@ -23,5 +26,11 @@ func main() {
 	mkm.InsertMasterKeyDataToDB(db, "TestFN_15", "TestLN_15", "15test@test.test", "fdfwrwer345fgrqtdfsda", "testpass", true)
 	mkm.InsertMasterKeyDataToDB(db, "TestFN_16", "TestLN_16", "16test@test.test", "adsfqwert4t114355", "trespass", true)
 
-	mkm.ResetMasterKey(db, "'9test@test.test'", "cred", "eufztrqwiefuqgkjahfvkj", "dfgadjkhsfgkhjgqwolieutzo", false)
+	err := gretry.Retry(func(attempts int) error {
+		reseterr := mkm.ResetMasterKey(db, "'9test@test.test'", "cred", "eufztrqwiefuqgkjahfvkj", "dfgadjkhsfgkhjgqwolieutzo", false)
+		return reseterr
+	})
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
 }
