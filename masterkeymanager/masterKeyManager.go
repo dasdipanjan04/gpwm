@@ -85,7 +85,7 @@ func UpdateInfo(db *sql.DB, id int, first_name string, last_name string,
 }
 
 // Resets master key in the database.
-func ResetMasterKey(db *sql.DB, email string, password string, oldMasterKey string, newmasterKey string, masterKeylost bool) {
+func ResetMasterKey(db *sql.DB, email string, password string, oldMasterKey string, newmasterKey string, masterKeylost bool) error {
 
 	findIdByEmail := fmt.Sprintf(`SELECT id, master_key FROM mastertable WHERE email in (%s);`, email)
 
@@ -94,23 +94,24 @@ func ResetMasterKey(db *sql.DB, email string, password string, oldMasterKey stri
 	err := db.QueryRow(findIdByEmail).Scan(&id, &oldMasterKeyFromTable)
 	if err != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:QueryRow ", err.Error())
-		return
+		return err
 	}
 	// decrypt oldmasterkey and compare
 	dycryptText, derr := masterkeysecure.DecryptAESMasterKey(oldMasterKeyFromTable, password)
-	if derr != nil {
+	if err != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKey ", derr.Error())
-		return
+		return err
 	}
 	if dycryptText != oldMasterKey {
-		keyMismatchError := errors.New("Key doesn't match")
-		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKey ", keyMismatchError.Error())
-		return
+		err = errors.New("Key doesn't match")
+		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKey ", err.Error())
+		return err
 	}
 	// encrypt new master key.
-	encryptedText, eerr := masterkeysecure.EncryptMasterKeyAES([]byte(newmasterKey), password)
-	if eerr != nil {
-		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKeyAES ", eerr.Error())
+	encryptedText, err := masterkeysecure.EncryptMasterKeyAES([]byte(newmasterKey), password)
+	if err != nil {
+		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKeyAES ", err.Error())
+		return err
 	}
 
 	reserMasterKeyStatement := `UPDATE mastertable
@@ -120,8 +121,9 @@ func ResetMasterKey(db *sql.DB, email string, password string, oldMasterKey stri
 	_, err = db.Exec(reserMasterKeyStatement, encryptedText, id)
 	if err != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:Exec ", err.Error())
-		return
+		return err
 	}
 
 	glogger.Glog("masterkeymanager:ResetMasterKey ", "You have successfully reset your master key")
+	return err
 }
