@@ -27,7 +27,7 @@ func main() {
 	mkm.InsertMasterKeyDataToDB(db, "TestFN_16", "TestLN_16", "16test@test.test", "adsfqwert4t114355", "trespass", true)
 
 	err := gretry.Retry(func(attempts int) error {
-		reseterr := mkm.ResetMasterKey(db, "'9test@test.test'", "cred", "eufztrqwiefuqgkjahfvkj", "dfgadjkhsfgkhjgqwolieutzo", false)
+		reseterr := mkm.ResetMasterKey(db)
 		return reseterr
 	})
 	if err != nil {
