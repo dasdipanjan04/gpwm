@@ -8,16 +8,25 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
 	"github.com/dasdipanjan04/gpwm/connect"
 	"github.com/dasdipanjan04/gpwm/helper/glogger"
+	"github.com/dasdipanjan04/gpwm/helper/gretry"
 	"github.com/dasdipanjan04/gpwm/helper/gscan"
 	"github.com/dasdipanjan04/gpwm/masterkeysecure"
 
 	_ "github.com/lib/pq"
 )
+
+type userDetails struct {
+	email        string
+	password     string
+	oldMasterkey string
+	newMasterkey string
+}
 
 func CreateMasterKeyTable() *sql.DB {
 	createTable := `create table if not exists mastertable (
@@ -88,10 +97,79 @@ func UpdateInfo(db *sql.DB, id int, first_name string, last_name string,
 // Resets master key in the database.
 func ResetMasterKey(db *sql.DB) error {
 
+	userdetail, err := GetUserDetails(db)
+
+	gretry.MAXIMUMALLOWEDATTEMPTS--
+
+	if err != nil {
+		rerr := gretry.Retry(func(attempts int) error {
+			reseterr := ResetMasterKey(db)
+			return reseterr
+		})
+		if rerr != nil {
+			log.Fatalln(rerr.Error())
+			return rerr
+		}
+		return rerr
+	}
+
+	// Finding the id and the stored encrypted master key from the table.
+	id := 0
+	oldMasterKeyFromTable := []byte("")
+	findIdByEmail := fmt.Sprintf(`SELECT id, master_key FROM mastertable WHERE email in (%s);`, userdetail.email)
+	err = db.QueryRow(findIdByEmail).Scan(&id, &oldMasterKeyFromTable)
+	if err != nil {
+		glogger.Glog("masterkeymanager:ResetMasterKey:QueryRow ", err.Error())
+		return err
+	}
+
+	// decrypt oldmasterkey and compare
+	dycryptText, derr := masterkeysecure.DecryptAESMasterKey(oldMasterKeyFromTable, userdetail.password)
+	if err != nil {
+		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKey ", derr.Error())
+		return err
+	}
+	if dycryptText != userdetail.oldMasterkey {
+		err = errors.New("Key doesn't match")
+		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKey ", err.Error())
+		return err
+	}
+
+	// encrypt new master key.
+	encryptedText, err := masterkeysecure.EncryptMasterKeyAES([]byte(userdetail.newMasterkey), userdetail.password)
+	if err != nil {
+		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKeyAES ", err.Error())
+		return err
+	}
+
+	// All the information is correct until this point, trying to reset the master key.
+	reserMasterKeyStatement := `UPDATE mastertable
+	SET master_key = $1
+	WHERE id = $2;`
+	_, err = db.Exec(reserMasterKeyStatement, encryptedText, id)
+	if err != nil {
+		glogger.Glog("masterkeymanager:ResetMasterKey:Exec ", err.Error())
+		return err
+	}
+	glogger.Glog("masterkeymanager:ResetMasterKey ", "You have successfully reset your master key")
+
+	return err
+}
+
+func GetUserDetails(db *sql.DB) (*userDetails, error) {
+
 	fmt.Println("Reset your masterkey")
 	fmt.Println("Please enter your registered email address:")
 	email := gscan.GscanFromTerminal()
 	email = "'" + email + "'"
+	id := 0
+	findIdByEmail := fmt.Sprintf(`SELECT id FROM mastertable WHERE email in (%s);`, email)
+	err := db.QueryRow(findIdByEmail).Scan(&id)
+	if err != nil {
+		glogger.Glog("masterkeymanager:ResetMasterKey:QueryRow ", err.Error())
+		fmt.Println("Sorry! your email address is incorrect. Please try again with the correct email address")
+		return nil, err
+	}
 
 	fmt.Println("Please enter your password:")
 	password := gscan.GscanFromTerminal()
@@ -100,45 +178,13 @@ func ResetMasterKey(db *sql.DB) error {
 	oldMasterKey := gscan.GscanFromTerminal()
 
 	fmt.Println("Please enter your new master key pass:")
-	newmasterKey := gscan.GscanFromTerminal()
+	newMasterKey := gscan.GscanFromTerminal()
 
-	findIdByEmail := fmt.Sprintf(`SELECT id, master_key FROM mastertable WHERE email in (%s);`, email)
+	userdetail := userDetails{}
+	userdetail.email = email
+	userdetail.password = password
+	userdetail.oldMasterkey = oldMasterKey
+	userdetail.newMasterkey = newMasterKey
 
-	id := 0
-	oldMasterKeyFromTable := []byte("")
-	err := db.QueryRow(findIdByEmail).Scan(&id, &oldMasterKeyFromTable)
-	if err != nil {
-		glogger.Glog("masterkeymanager:ResetMasterKey:QueryRow ", err.Error())
-		return err
-	}
-	// decrypt oldmasterkey and compare
-	dycryptText, derr := masterkeysecure.DecryptAESMasterKey(oldMasterKeyFromTable, password)
-	if err != nil {
-		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKey ", derr.Error())
-		return err
-	}
-	if dycryptText != oldMasterKey {
-		err = errors.New("Key doesn't match")
-		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKey ", err.Error())
-		return err
-	}
-	// encrypt new master key.
-	encryptedText, err := masterkeysecure.EncryptMasterKeyAES([]byte(newmasterKey), password)
-	if err != nil {
-		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKeyAES ", err.Error())
-		return err
-	}
-
-	reserMasterKeyStatement := `UPDATE mastertable
-	SET master_key = $1
-	WHERE id = $2;`
-
-	_, err = db.Exec(reserMasterKeyStatement, encryptedText, id)
-	if err != nil {
-		glogger.Glog("masterkeymanager:ResetMasterKey:Exec ", err.Error())
-		return err
-	}
-
-	glogger.Glog("masterkeymanager:ResetMasterKey ", "You have successfully reset your master key")
-	return err
+	return &userdetail, err
 }
