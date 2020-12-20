@@ -91,6 +91,7 @@ func ResetMasterKey(db *sql.DB) error {
 	fmt.Println("Reset your masterkey")
 	fmt.Println("Please enter your registered email address:")
 	email := gscan.GscanFromTerminal()
+	email = "'" + email + "'"
 
 	fmt.Println("Please enter your password:")
 	password := gscan.GscanFromTerminal()
