@@ -13,6 +13,7 @@ import (
 
 	"github.com/dasdipanjan04/gpwm/connect"
 	"github.com/dasdipanjan04/gpwm/helper/glogger"
+	"github.com/dasdipanjan04/gpwm/helper/gscan"
 	"github.com/dasdipanjan04/gpwm/masterkeysecure"
 
 	_ "github.com/lib/pq"
@@ -85,7 +86,20 @@ func UpdateInfo(db *sql.DB, id int, first_name string, last_name string,
 }
 
 // Resets master key in the database.
-func ResetMasterKey(db *sql.DB, email string, password string, oldMasterKey string, newmasterKey string, masterKeylost bool) error {
+func ResetMasterKey(db *sql.DB) error {
+
+	fmt.Println("Reset your masterkey")
+	fmt.Println("Please enter your registered email address:")
+	email := gscan.GscanFromTerminal()
+
+	fmt.Println("Please enter your password:")
+	password := gscan.GscanFromTerminal()
+
+	fmt.Println("Please enter your current master key pass:")
+	oldMasterKey := gscan.GscanFromTerminal()
+
+	fmt.Println("Please enter your new master key pass:")
+	newmasterKey := gscan.GscanFromTerminal()
 
 	findIdByEmail := fmt.Sprintf(`SELECT id, master_key FROM mastertable WHERE email in (%s);`, email)
 
