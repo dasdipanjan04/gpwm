@@ -26,7 +26,7 @@ type PsqlEnv struct {
 
 func GetPsqlenv() string {
 
-	err := godotenv.Load(path.Join(os.Getenv("HOME"), "go/src/github.com/dasdipanjan04/gpwm/connect/psql.env"))
+	err := godotenv.Load(path.Join(os.Getenv("HOME"), "psql.env"))
 	if err != nil {
 		glogger.Glog("connect:GetPsqlenv:Load ", err.Error())
 		return err.Error()
