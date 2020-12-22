@@ -1,2 +1,2 @@
 # gpwm
-A go based open source password manager
+A go based open source password manager.
