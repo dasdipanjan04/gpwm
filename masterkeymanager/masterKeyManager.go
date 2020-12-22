@@ -55,13 +55,15 @@ func CreateMasterKeyTable() *sql.DB {
 	return db
 }
 
-func InsertMasterKeyDataToDB(db *sql.DB, first_name string, last_name string,
-	email string, master_key string, password string, is_active bool) {
+func InsertUserDataToDB(db *sql.DB, first_name string, last_name string,
+	email string, password string, is_active bool) {
 
 	insertStatement := `INSERT INTO mastertable (first_name, last_name, email, master_key, created_at, updated_at, is_active)
 		SELECT $1, $2, $3, $4, $5, $6, $7
 		WHERE NOT EXISTS (SELECT email FROM mastertable where(mastertable.email = $3));`
 
+	// Randomly generate master key for each user data insert to the masterkey table.
+	master_key := GenerateMasterKey()
 	master_key_byte := []byte(master_key)
 	encrypted_master_key, eerr := masterkeysecure.EncryptMasterKeyAES(master_key_byte, password)
 	if eerr != nil {
