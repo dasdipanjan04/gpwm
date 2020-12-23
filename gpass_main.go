@@ -23,5 +23,5 @@ func main() {
 	mkm.InsertUserDataToDB(db, "TestFN_15", "TestLN_15", "15test@test.test", "testpass", true)
 	mkm.InsertUserDataToDB(db, "TestFN_16", "TestLN_16", "16test@test.test", "trespass", true)
 
-	//mkm.ResetMasterKey(db)
+	mkm.ResetMasterKey(db)
 }
