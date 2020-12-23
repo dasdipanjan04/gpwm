@@ -10,29 +10,31 @@ import (
 	"github.com/dasdipanjan04/gpwm/helper/glogger"
 )
 
-func GenerateMasterKeyHashSha256(password string) [sha256.Size]byte {
-	return sha256.Sum256([]byte(password))
+// Generate a Key Encryption Key(KEK) using user provider secret password and some non-secret such as user account email address.
+func GenerateMasterKEKHashSha256(password string, email string) [sha256.Size]byte {
+	return sha256.Sum256([]byte(password + email))
 }
 
-func EncryptMasterKeyAES(data []byte, password string) ([]byte, error) {
+// Encrypt Actual Key By the KEK
+func EncryptMasterKEKAES(data []byte, password string, email string) ([]byte, error) {
 
-	key := GenerateMasterKeyHashSha256(password)
+	key := GenerateMasterKEKHashSha256(password, email)
 
 	cipherblock, err := aes.NewCipher(key[:])
 	if err != nil {
-		glogger.Glog("masterkeysecure:EncryptMasterKeyAES ", err.Error())
+		glogger.Glog("masterkeysecure:EncryptMasterKEKAES ", err.Error())
 		return nil, err
 	}
 
 	gcm, err := cipher.NewGCM(cipherblock)
 	if err != nil {
-		glogger.Glog("masterkeysecure:EncryptMasterKeyAES ", err.Error())
+		glogger.Glog("masterkeysecure:EncryptMasterKEKAES ", err.Error())
 		return nil, err
 	}
 
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		glogger.Glog("masterkeysecure:EncryptMasterKeyAES ", err.Error())
+		glogger.Glog("masterkeysecure:EncryptMasterKEKAES ", err.Error())
 		return nil, err
 	}
 
@@ -41,18 +43,19 @@ func EncryptMasterKeyAES(data []byte, password string) ([]byte, error) {
 	return ciphertext, nil
 }
 
-func DecryptAESMasterKey(data []byte, password string) (string, error) {
-	key := GenerateMasterKeyHashSha256(password)
+// Decrypt Actual key using KEK
+func DecryptAESMasterKEK(data []byte, password string, email string) (string, error) {
+	key := GenerateMasterKEKHashSha256(password, email)
 
 	cipherblock, err := aes.NewCipher(key[:])
 	if err != nil {
-		glogger.Glog("masterkeysecure:DecryptAESMasterKey ", err.Error())
+		glogger.Glog("masterkeysecure:DecryptAESMasterKEK ", err.Error())
 		return "", err
 	}
 
 	gcm, err := cipher.NewGCM(cipherblock)
 	if err != nil {
-		glogger.Glog("masterkeysecure:DecryptAESMasterKey ", err.Error())
+		glogger.Glog("masterkeysecure:DecryptAESMasterKEK ", err.Error())
 		return "", err
 	}
 
@@ -60,7 +63,7 @@ func DecryptAESMasterKey(data []byte, password string) (string, error) {
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		glogger.Glog("masterkeysecure:DecryptAESMasterKey ", err.Error())
+		glogger.Glog("masterkeysecure:DecryptAESMasterKEK ", err.Error())
 		return "", err
 	}
 

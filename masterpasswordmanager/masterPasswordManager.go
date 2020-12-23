@@ -2,7 +2,7 @@
 // Manages various aspects e.g. insert, update, reset of the master key table //
 ////////////////////////////////////////////////////////////////////////////////
 
-package masterkeymanager
+package masterpasswordmanager
 
 import (
 	"database/sql"
@@ -63,25 +63,29 @@ func InsertUserDataToDB(db *sql.DB, first_name string, last_name string,
 		SELECT $1, $2, $3, $4, $5, $6, $7
 		WHERE NOT EXISTS (SELECT email FROM mastertable where(mastertable.email = $3));`
 
+	//Ask user to set a Master Password
+	fmt.Println("Please Set a Strong Master Password:")
+	masterPassword := gscan.GscanFromTerminal()
+
 	// Randomly generate master key for each user data insert to the masterkey table.
-	master_key := GenerateMasterKey()
-	master_key_byte := []byte(master_key)
-	encrypted_master_key, eerr := masterkeysecure.EncryptMasterKeyAES(master_key_byte, password)
+	master_actual_key := GenerateActualKey()
+	master_actual_key_byte := []byte(master_actual_key)
+	encrypted_master_actual_key, eerr := masterkeysecure.EncryptMasterKEKAES(master_actual_key_byte, masterPassword, email)
 	if eerr != nil {
-		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKeyAES ", eerr.Error())
+		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKEKAES ", eerr.Error())
 	}
 
 	time_now := time.Now().Unix()
 	created_at := strconv.FormatInt(time_now, 10)
 	updated_at := strconv.FormatInt(time_now, 10)
 
-	_, err := db.Exec(insertStatement, first_name, last_name, email, encrypted_master_key, created_at, updated_at, is_active)
+	_, err := db.Exec(insertStatement, first_name, last_name, email, encrypted_master_actual_key, created_at, updated_at, is_active)
 	if err != nil {
 		glogger.Glog("masterkeymanager:InsertMasterKeyDataToDB:Exec ", err.Error())
 		return
 	}
 
-	gqrpdf.MasterKeyQRCodePDFGenerator(master_key, first_name, last_name)
+	gqrpdf.MasterKeyQRCodePDFGenerator(master_actual_key, first_name, last_name)
 }
 
 func UpdateInfo(db *sql.DB, id int, first_name string, last_name string,
@@ -129,21 +133,21 @@ func ResetMasterKey(db *sql.DB) error {
 	}
 
 	// decrypt oldmasterkey and compare
-	dycryptText, derr := masterkeysecure.DecryptAESMasterKey(oldMasterKeyFromTable, userdetail.password)
+	dycryptText, derr := masterkeysecure.DecryptAESMasterKEK(oldMasterKeyFromTable, userdetail.password, userdetail.email)
 	if err != nil {
-		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKey ", derr.Error())
+		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKEK ", derr.Error())
 		return err
 	}
 	if dycryptText != userdetail.oldMasterkey {
 		err = errors.New("Key doesn't match")
-		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKey ", err.Error())
+		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKEK ", err.Error())
 		return err
 	}
 
 	// encrypt new master key.
-	encryptedText, err := masterkeysecure.EncryptMasterKeyAES([]byte(userdetail.newMasterkey), userdetail.password)
+	encryptedText, err := masterkeysecure.EncryptMasterKEKAES([]byte(userdetail.newMasterkey), userdetail.password, userdetail.email)
 	if err != nil {
-		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKeyAES ", err.Error())
+		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKEKAES ", err.Error())
 		return err
 	}
 

@@ -1,4 +1,4 @@
-package masterkeymanager
+package masterpasswordmanager
 
 import (
 	"math/rand"
@@ -17,7 +17,8 @@ var (
 const minAnyCharNumbers = 2
 const masterpasswordLength = 25
 
-func GenerateMasterKey() string {
+// Generates a Crytographically secure random alphanumeric
+func GenerateActualKey() string {
 
 	rand.Seed(time.Now().UnixNano())
 
