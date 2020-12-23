@@ -14,6 +14,7 @@ import (
 
 	"github.com/dasdipanjan04/gpwm/connect"
 	"github.com/dasdipanjan04/gpwm/helper/glogger"
+	"github.com/dasdipanjan04/gpwm/helper/gqrpdf"
 	"github.com/dasdipanjan04/gpwm/helper/gretry"
 	"github.com/dasdipanjan04/gpwm/helper/gscan"
 	"github.com/dasdipanjan04/gpwm/masterkeysecure"
@@ -79,6 +80,8 @@ func InsertUserDataToDB(db *sql.DB, first_name string, last_name string,
 		glogger.Glog("masterkeymanager:InsertMasterKeyDataToDB:Exec ", err.Error())
 		return
 	}
+
+	gqrpdf.MasterKeyQRCodePDFGenerator(master_key, first_name, last_name)
 }
 
 func UpdateInfo(db *sql.DB, id int, first_name string, last_name string,
