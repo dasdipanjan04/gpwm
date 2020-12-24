@@ -68,9 +68,9 @@ func InsertUserDataToDB(db *sql.DB, first_name string, last_name string,
 	masterPassword := gscan.GscanFromTerminal()
 
 	// Randomly generate master key for each user data insert to the masterkey table.
-	master_actual_key := GenerateActualKey()
-	master_actual_key_byte := []byte(master_actual_key)
-	encrypted_master_actual_key, eerr := masterkeysecure.EncryptMasterKEKAES(master_actual_key_byte, masterPassword, email)
+	master_account_key := GenerateAccountSecretKey()
+	master_account_key_byte := []byte(master_account_key)
+	encrypted_master_account_key, eerr := masterkeysecure.EncryptMasterKEKAES(master_account_key_byte, masterPassword, email)
 	if eerr != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKEKAES ", eerr.Error())
 	}
@@ -79,13 +79,13 @@ func InsertUserDataToDB(db *sql.DB, first_name string, last_name string,
 	created_at := strconv.FormatInt(time_now, 10)
 	updated_at := strconv.FormatInt(time_now, 10)
 
-	_, err := db.Exec(insertStatement, first_name, last_name, email, encrypted_master_actual_key, created_at, updated_at, is_active)
+	_, err := db.Exec(insertStatement, first_name, last_name, email, encrypted_master_account_key, created_at, updated_at, is_active)
 	if err != nil {
 		glogger.Glog("masterkeymanager:InsertMasterKeyDataToDB:Exec ", err.Error())
 		return
 	}
 
-	gqrpdf.MasterKeyQRCodePDFGenerator(master_actual_key, first_name, last_name)
+	gqrpdf.MasterKeyQRCodePDFGenerator(master_account_key, first_name, last_name)
 }
 
 func UpdateInfo(db *sql.DB, id int, first_name string, last_name string,

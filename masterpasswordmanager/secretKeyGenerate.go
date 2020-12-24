@@ -18,7 +18,7 @@ const minAnyCharNumbers = 2
 const masterpasswordLength = 25
 
 // Generates a Crytographically secure random alphanumeric
-func GenerateActualKey() string {
+func GenerateAccountSecretKey() string {
 
 	rand.Seed(time.Now().UnixNano())
 
