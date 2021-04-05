@@ -14,11 +14,11 @@ import (
 	"time"
 
 	"github.com/dasdipanjan04/gpwm/connect"
+	"github.com/dasdipanjan04/gpwm/gpwmcrypto"
 	"github.com/dasdipanjan04/gpwm/helper/glogger"
 	"github.com/dasdipanjan04/gpwm/helper/gqrpdf"
 	"github.com/dasdipanjan04/gpwm/helper/gretry"
 	"github.com/dasdipanjan04/gpwm/helper/gscan"
-	"github.com/dasdipanjan04/gpwm/masterkeysecure"
 
 	_ "github.com/lib/pq"
 )
@@ -69,9 +69,9 @@ func InsertUserDataToDB(db *sql.DB, first_name string, last_name string,
 	masterPassword := gscan.GscanFromTerminal()
 
 	// Randomly generate master key for each user data insert to the masterkey table.
-	master_account_key := GenerateAccountSecretKey()
+	master_account_key := gpwmcrypto.GenerateAccountSecretKey()
 	master_account_key_byte := []byte(master_account_key)
-	encrypted_master_account_key, eerr := masterkeysecure.EncryptMasterKEKAES(master_account_key_byte, masterPassword, email)
+	encrypted_master_account_key, eerr := gpwmcrypto.EncryptKEKAES(master_account_key_byte, masterPassword, email)
 	if eerr != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKEKAES ", eerr.Error())
 	}
@@ -136,7 +136,7 @@ func ResetMasterKey(db *sql.DB) error {
 	emailId := strings.Trim(userdetail.email, "'")
 
 	// decrypt oldmasterkey and compare
-	dycryptText, err := masterkeysecure.DecryptAESMasterKEK(oldMasterKeyFromTable, string(userdetail.password), emailId)
+	dycryptText, err := gpwmcrypto.DecryptAESKEK(oldMasterKeyFromTable, string(userdetail.password), emailId)
 	if err != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKEK ", err.Error())
 		return err
@@ -149,7 +149,7 @@ func ResetMasterKey(db *sql.DB) error {
 	}
 
 	// encrypt new master key.
-	encryptedText, err := masterkeysecure.EncryptMasterKEKAES([]byte(userdetail.newMasterkey), userdetail.password, emailId)
+	encryptedText, err := gpwmcrypto.EncryptKEKAES([]byte(userdetail.newMasterkey), userdetail.password, emailId)
 	if err != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKEKAES ", err.Error())
 		return err
@@ -191,7 +191,7 @@ func GetUserDetails(db *sql.DB) (*userDetails, error) {
 	oldMasterKey := gscan.GscanFromTerminal()
 
 	fmt.Println("Please enter your new master key pass:")
-	newMasterKey := gscan.GscanFromTerminal()
+	newMasterKey := gpwmcrypto.GenerateAccountSecretKey()
 
 	userdetail := userDetails{}
 	userdetail.email = email
