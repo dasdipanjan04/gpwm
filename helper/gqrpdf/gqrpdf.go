@@ -31,7 +31,7 @@ func MasterKeyQRCodePDFGenerator(masterKey string, firstName string, lastname st
 			})
 	})
 	qrpdf.Row(50, func() {
-		qrpdf.Text("Please save it in a secure place.",
+		qrpdf.Text("Please store it in a secure place.",
 			props.Text{
 				Top:         12,
 				Size:        20,
