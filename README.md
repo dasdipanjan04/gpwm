@@ -3,6 +3,6 @@
 
 [![Go](https://github.com/dasdipanjan04/gpwm/actions/workflows/go.yml/badge.svg)](https://github.com/dasdipanjan04/gpwm/actions/workflows/go.yml)
 
-![languge](https://img.shields.io/badge/go-99%25-blue)
+![languge](https://img.shields.io/badge/Go-99%25-blue)
 
 A go based open source password manager.
