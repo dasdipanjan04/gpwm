@@ -1,4 +1,4 @@
-package masterpasswordmanager
+package gpwmcrypto
 
 import (
 	"math/rand"
