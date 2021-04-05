@@ -24,10 +24,11 @@ import (
 )
 
 type userDetails struct {
+	first_name   string
+	last_name    string
 	email        string
 	password     string
 	oldMasterkey string
-	newMasterkey string
 }
 
 func CreateMasterKeyTable() *sql.DB {
@@ -148,8 +149,10 @@ func ResetMasterKey(db *sql.DB) error {
 		return err
 	}
 
-	// encrypt new master key.
-	encryptedText, err := gpwmcrypto.EncryptKEKAES([]byte(userdetail.newMasterkey), userdetail.password, emailId)
+	// Generate new account key or master key.
+	new_master_account_key := gpwmcrypto.GenerateAccountSecretKey()
+	// Encrypt new master key.
+	encryptedText, err := gpwmcrypto.EncryptKEKAES([]byte(new_master_account_key), userdetail.password, emailId)
 	if err != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKEKAES ", err.Error())
 		return err
@@ -166,6 +169,8 @@ func ResetMasterKey(db *sql.DB) error {
 	}
 	glogger.Glog("masterkeymanager:ResetMasterKey ", "You have successfully reset your master key")
 
+	// Generate QR Code with new master key
+	gqrpdf.MasterKeyQRCodePDFGenerator(new_master_account_key, userdetail.first_name, userdetail.last_name)
 	return err
 }
 
@@ -184,20 +189,28 @@ func GetUserDetails(db *sql.DB) (*userDetails, error) {
 		return nil, err
 	}
 
+	first_name := ""
+	last_name := ""
+	findNameById := fmt.Sprintf(`SELECT first_name, last_name FROM mastertable WHERE id in (%d)`, id)
+	err = db.QueryRow(findNameById).Scan(&first_name, &last_name)
+	if err != nil {
+		glogger.Glog("masterkeymanager:ResetMasterKey:QueryRow ", err.Error())
+		fmt.Println("Unable to retrieve name from the database.")
+		return nil, err
+	}
+
 	fmt.Println("Please enter your password:")
 	password := gscan.GscanFromTerminal()
 
 	fmt.Println("Please enter your current master key pass:")
 	oldMasterKey := gscan.GscanFromTerminal()
 
-	fmt.Println("Please enter your new master key pass:")
-	newMasterKey := gpwmcrypto.GenerateAccountSecretKey()
-
 	userdetail := userDetails{}
+	userdetail.first_name = first_name
+	userdetail.last_name = last_name
 	userdetail.email = email
 	userdetail.password = password
 	userdetail.oldMasterkey = oldMasterKey
-	userdetail.newMasterkey = newMasterKey
 
 	return &userdetail, err
 }
