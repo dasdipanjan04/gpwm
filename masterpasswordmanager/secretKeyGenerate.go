@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	lowerCaseSet        = "abcdedfghijklmnopqrst"
+	lowerCaseSet        = "abcdefghijklmnopqrstuvwxyz"
 	upperCaseSet        = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	specialCharacterSet = "!@#$%&*(){}[]?"
 	digitsSet           = "0123456789"
