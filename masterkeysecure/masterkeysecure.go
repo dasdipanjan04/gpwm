@@ -49,13 +49,13 @@ func DecryptAESMasterKEK(data []byte, password string, email string) (string, er
 
 	cipherblock, err := aes.NewCipher(key[:])
 	if err != nil {
-		glogger.Glog("masterkeysecure:DecryptAESMasterKEK ", err.Error())
+		glogger.Glog("masterkeysecure:DecryptAESMasterKEK:Cipherblock ", err.Error())
 		return "", err
 	}
 
 	gcm, err := cipher.NewGCM(cipherblock)
 	if err != nil {
-		glogger.Glog("masterkeysecure:DecryptAESMasterKEK ", err.Error())
+		glogger.Glog("masterkeysecure:DecryptAESMasterKEK:GCM ", err.Error())
 		return "", err
 	}
 
@@ -63,7 +63,7 @@ func DecryptAESMasterKEK(data []byte, password string, email string) (string, er
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		glogger.Glog("masterkeysecure:DecryptAESMasterKEK ", err.Error())
+		glogger.Glog("masterkeysecure:DecryptAESMasterKEK:Plaintext ", err.Error())
 		return "", err
 	}
 
