@@ -57,7 +57,7 @@ func CreateMasterKeyTable() *sql.DB {
 }
 
 func InsertUserDataToDB(db *sql.DB, first_name string, last_name string,
-	email string, password string, is_active bool) {
+	email string, is_active bool) {
 
 	insertStatement := `INSERT INTO mastertable (first_name, last_name, email, master_key, created_at, updated_at, is_active)
 		SELECT $1, $2, $3, $4, $5, $6, $7
