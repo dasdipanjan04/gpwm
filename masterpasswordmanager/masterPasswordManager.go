@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dasdipanjan04/gpwm/connect"
@@ -132,20 +133,23 @@ func ResetMasterKey(db *sql.DB) error {
 		return err
 	}
 
+	emailId := strings.Trim(userdetail.email, "'")
+
 	// decrypt oldmasterkey and compare
-	dycryptText, derr := masterkeysecure.DecryptAESMasterKEK(oldMasterKeyFromTable, userdetail.password, userdetail.email)
+	dycryptText, err := masterkeysecure.DecryptAESMasterKEK(oldMasterKeyFromTable, string(userdetail.password), emailId)
 	if err != nil {
-		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKEK ", derr.Error())
+		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKEK ", err.Error())
 		return err
 	}
+
 	if dycryptText != userdetail.oldMasterkey {
-		err = errors.New("Key doesn't match")
+		err = errors.New("key doesn't match")
 		glogger.Glog("masterkeymanager:ResetMasterKey:DecryptAESMasterKEK ", err.Error())
 		return err
 	}
 
 	// encrypt new master key.
-	encryptedText, err := masterkeysecure.EncryptMasterKEKAES([]byte(userdetail.newMasterkey), userdetail.password, userdetail.email)
+	encryptedText, err := masterkeysecure.EncryptMasterKEKAES([]byte(userdetail.newMasterkey), userdetail.password, emailId)
 	if err != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKEKAES ", err.Error())
 		return err
