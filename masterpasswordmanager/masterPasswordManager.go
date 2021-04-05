@@ -156,10 +156,10 @@ func ResetMasterKey(db *sql.DB) error {
 	}
 
 	// All the information is correct until this point, trying to reset the master key.
-	reserMasterKeyStatement := `UPDATE mastertable
+	resetMasterKeyStatement := `UPDATE mastertable
 	SET master_key = $1
 	WHERE id = $2;`
-	_, err = db.Exec(reserMasterKeyStatement, encryptedText, id)
+	_, err = db.Exec(resetMasterKeyStatement, encryptedText, id)
 	if err != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:Exec ", err.Error())
 		return err
