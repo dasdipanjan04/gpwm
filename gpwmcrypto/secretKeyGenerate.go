@@ -25,20 +25,20 @@ func GenerateAccountSecretKey() string {
 	var password strings.Builder
 
 	for i := 0; i < minAnyCharNumbers; i++ {
-		random_lower := rand.Intn(len(lowerCaseSet))
-		password.WriteString(string(lowerCaseSet[random_lower]))
-		random_upper := rand.Intn(len(upperCaseSet))
-		password.WriteString(string(upperCaseSet[random_upper]))
-		random_special := rand.Intn(len(specialCharacterSet))
-		password.WriteString(string(specialCharacterSet[random_special]))
-		random_digit := rand.Intn(len(digitsSet))
-		password.WriteString(string(digitsSet[random_digit]))
+		randomLower := rand.Intn(len(lowerCaseSet))
+		password.WriteString(string(lowerCaseSet[randomLower]))
+		randomUpper := rand.Intn(len(upperCaseSet))
+		password.WriteString(string(upperCaseSet[randomUpper]))
+		randomSpecial := rand.Intn(len(specialCharacterSet))
+		password.WriteString(string(specialCharacterSet[randomSpecial]))
+		randomDigit := rand.Intn(len(digitsSet))
+		password.WriteString(string(digitsSet[randomDigit]))
 	}
 
 	masterpasswordRemianingLength := masterpasswordLength - 4*minAnyCharNumbers
 	for i := 0; i < masterpasswordRemianingLength; i++ {
-		random_all := rand.Intn(len(allCharacterSet))
-		password.WriteString(string(allCharacterSet[random_all]))
+		randomAll := rand.Intn(len(allCharacterSet))
+		password.WriteString(string(allCharacterSet[randomAll]))
 	}
 
 	masterPassword := []rune(password.String())
