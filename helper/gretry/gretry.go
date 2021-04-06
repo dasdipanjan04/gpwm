@@ -13,8 +13,10 @@ var MAXIMUMALLOWEDATTEMPTS = 5 // maximum allowed attempts for retrying master k
 
 var errMaxAttemptReached = errors.New("maximum allowed retry reached")
 
+// RetryFunction
 type RetryFunction func(attempts int) error
 
+// Retry reset
 func Retry(retryFunc RetryFunction) error {
 
 	for ret := 1; ret < MAXIMUMALLOWEDATTEMPTS; ret++ {
