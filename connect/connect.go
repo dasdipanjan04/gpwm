@@ -41,6 +41,7 @@ func GetPsqlenv() string {
 	return psqlConnect
 }
 
+// OpenDB tries to open the psql db.
 func OpenDB() (*sql.DB, error) {
 
 	psqlEnv := GetPsqlenv()
@@ -54,6 +55,7 @@ func OpenDB() (*sql.DB, error) {
 	return psqlDB, err
 }
 
+// ConnectToMasterDB connects to the master database.
 func ConnectToMasterDB() (*sql.DB, error) {
 
 	psqlDb, err := OpenDB()
@@ -71,6 +73,7 @@ func ConnectToMasterDB() (*sql.DB, error) {
 	return psqlDb, err
 }
 
+// CloseDB closes db.
 func CloseDB(db *sql.DB) error {
 	err := db.Close()
 	if err != nil {
