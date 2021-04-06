@@ -22,32 +22,32 @@ func CreatePasswordManagerTable() *sql.DB {
 		is_active BOOL
 	  );`
 
-	passwordmanager_db, err := connect.OpenDB()
+	passwordmanagerDb, err := connect.OpenDB()
 	if err != nil {
 		glogger.Glog("passwordmanager:CreatePasswordManagerTable:OpenDB ", err.Error())
 		return nil
 	}
 
-	_, err = passwordmanager_db.Exec(createTable)
+	_, err = passwordmanagerDb.Exec(createTable)
 	if err != nil {
 		glogger.Glog("passwordmanager:CreatePasswordManagerTable:Exec ", err.Error())
 		return nil
 	}
 
-	return passwordmanager_db
+	return passwordmanagerDb
 }
 
 // InsertEncryptedPasswordToDB inserts newly encrypted app password with user name to the database.
-func InsertEncryptedPasswordToDB(db_passmanager *sql.DB,
-	application_name string,
+func InsertEncryptedPasswordToDB(dbPassmanager *sql.DB,
+	applicationName string,
 	username string,
-	encrypted_app_password []byte,
-	is_active bool) error {
+	encryptedAppPassword []byte,
+	isActive bool) error {
 
 	insertStatement := `INSERT INTO passwordmanagertable (application_name, user_name, apllication_password, created_at, updated_at, is_active)
 	SELECT $1, $2, $3, $4, $5, $6
 	WHERE NOT EXISTS (SELECT application_name FROM passwordmanagertable where(passwordmanagertable.application_name = $1));`
-	_, err := db_passmanager.Exec(insertStatement, application_name, "1test@test.test", encrypted_app_password, "created_at", "updated_at", true)
+	_, err := dbPassmanager.Exec(insertStatement, applicationName, "1test@test.test", encryptedAppPassword, "created_at", "updated_at", true)
 	if err != nil {
 		glogger.Glog("passwordmanager:InsertMasterKeyDataToDB:Exec ", err.Error())
 		return err
@@ -56,8 +56,8 @@ func InsertEncryptedPasswordToDB(db_passmanager *sql.DB,
 }
 
 // EncryptApplicationPassword encrypts application password.
-func EncryptApplicationPassword(db_master *sql.DB,
-	db_passmanager *sql.DB,
+func EncryptApplicationPassword(dbMaster *sql.DB,
+	dbPassmanager *sql.DB,
 	masterPassword string,
 	email string,
 	application string,
@@ -66,7 +66,7 @@ func EncryptApplicationPassword(db_master *sql.DB,
 	id := 0
 	oldMasterKeyFromTable := []byte("")
 	findIdByEmail := fmt.Sprintf(`SELECT id, master_key FROM mastertable WHERE email in (%s);`, email)
-	err := db_master.QueryRow(findIdByEmail).Scan(&id, &oldMasterKeyFromTable)
+	err := dbMaster.QueryRow(findIdByEmail).Scan(&id, &oldMasterKeyFromTable)
 	if err != nil {
 		glogger.Glog("passwordmanager:EncryptApplicationPassword:QueryRow ", err.Error())
 		return nil, err
@@ -80,20 +80,20 @@ func EncryptApplicationPassword(db_master *sql.DB,
 		return nil, err
 	}
 
-	application_password_byte := []byte(appPassword)
-	encrypted_app_password, err := gpwmcrypto.EncryptKEKAES(application_password_byte, dycryptedMasterKey, email)
+	applicationPasswordByte := []byte(appPassword)
+	encryptedAppPassword, err := gpwmcrypto.EncryptKEKAES(applicationPasswordByte, dycryptedMasterKey, email)
 	if err != nil {
 		glogger.Glog("passwordmanager:EncryptApplicationPassword:EncryptMasterKEKAES ", err.Error())
 		return nil, err
 	}
 
-	return encrypted_app_password, err
+	return encryptedAppPassword, err
 }
 
 // DecryptAppPassword decrypts the application password.
-func DecryptAppPassword(encrypted_app_password []byte, masterKey string, email string) (string, error) {
+func DecryptAppPassword(encryptedAppPassword []byte, masterKey string, email string) (string, error) {
 	email = strings.Trim(email, "'")
-	dycryptAppPass, err := gpwmcrypto.DecryptAESKEK(encrypted_app_password, masterKey, email)
+	dycryptAppPass, err := gpwmcrypto.DecryptAESKEK(encryptedAppPassword, masterKey, email)
 	if err != nil {
 		glogger.Glog("passwordmanager:DecryptAppPassword:DecryptAESMasterKEK ", err.Error())
 		return "", err
