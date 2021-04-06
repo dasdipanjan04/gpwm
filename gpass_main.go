@@ -12,7 +12,7 @@ func main() {
 	mkm.ResetMasterKey(db)
 
 	passwordManagerTable := passwordmanager.CreatePasswordManagerTable()
-	encrypted_app_password, err := passwordmanager.EncryptApplicationPassword(db, passwordManagerTable,
+	encryptedAppPassword, err := passwordmanager.EncryptApplicationPassword(db, passwordManagerTable,
 		"1234",
 		"'1test@test.test'",
 		"facebook",
@@ -23,6 +23,6 @@ func main() {
 	passwordmanager.InsertEncryptedPasswordToDB(passwordManagerTable,
 		"facebook",
 		"'1test@test.test'",
-		encrypted_app_password,
+		encryptedAppPassword,
 		true)
 }
