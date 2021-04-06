@@ -20,7 +20,7 @@ import (
 	"github.com/dasdipanjan04/gpwm/helper/gretry"
 	"github.com/dasdipanjan04/gpwm/helper/gscan"
 
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // imports lib pq for psql
 )
 
 type userDetails struct {
@@ -61,7 +61,7 @@ func CreateMasterKeyTable() *sql.DB {
 
 // InsertUserDataToDB inserts new information to the database.
 func InsertUserDataToDB(db *sql.DB, firstName string, lastName string,
-	email string, is_active bool) {
+	email string, isActive bool) {
 
 	insertStatement := `INSERT INTO mastertable (first_name, last_name, email, master_key, created_at, updated_at, is_active)
 		SELECT $1, $2, $3, $4, $5, $6, $7
@@ -83,7 +83,7 @@ func InsertUserDataToDB(db *sql.DB, firstName string, lastName string,
 	createdAt := strconv.FormatInt(timeNow, 10)
 	updatedAt := strconv.FormatInt(timeNow, 10)
 
-	_, err := db.Exec(insertStatement, firstName, lastName, email, encryptedMasterAccountKey, createdAt, updatedAt, is_active)
+	_, err := db.Exec(insertStatement, firstName, lastName, email, encryptedMasterAccountKey, createdAt, updatedAt, isActive)
 	if err != nil {
 		glogger.Glog("masterkeymanager:InsertMasterKeyDataToDB:Exec ", err.Error())
 		return
