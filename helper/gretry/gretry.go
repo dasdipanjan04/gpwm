@@ -9,11 +9,12 @@ package gretry
 
 import "errors"
 
-var MAXIMUMALLOWEDATTEMPTS = 5 // maximum allowed attempts for retrying master key reset
+// maximum allowed attempts for retrying master key reset
+var MAXIMUMALLOWEDATTEMPTS = 5
 
 var errMaxAttemptReached = errors.New("maximum allowed retry reached")
 
-// RetryFunction
+// RetryFunction typedef
 type RetryFunction func(attempts int) error
 
 // Retry resets
