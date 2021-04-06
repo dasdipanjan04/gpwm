@@ -9,6 +9,7 @@ import (
 	"os"
 )
 
+// Glog logs errors.
 func Glog(messageSource string, logMessage string) {
 
 	logFile, err := os.OpenFile("gpwm.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)

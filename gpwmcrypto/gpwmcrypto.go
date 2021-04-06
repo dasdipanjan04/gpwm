@@ -43,7 +43,7 @@ func EncryptKEKAES(data []byte, password string, email string) ([]byte, error) {
 	return ciphertext, nil
 }
 
-// Decrypt Actual key using KEK
+// "DecryptAESKEK" decrypts Actual key using KEK
 func DecryptAESKEK(data []byte, password string, email string) (string, error) {
 	key := GenerateKEKHashSha256(password, email)
 
