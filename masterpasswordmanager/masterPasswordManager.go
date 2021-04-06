@@ -24,8 +24,8 @@ import (
 )
 
 type userDetails struct {
-	first_name   string
-	last_name    string
+	firstName    string
+	lastName     string
 	email        string
 	password     string
 	oldMasterkey string
@@ -60,7 +60,7 @@ func CreateMasterKeyTable() *sql.DB {
 }
 
 // InsertUserDataToDB inserts new information to the database.
-func InsertUserDataToDB(db *sql.DB, first_name string, last_name string,
+func InsertUserDataToDB(db *sql.DB, firstName string, lastName string,
 	email string, is_active bool) {
 
 	insertStatement := `INSERT INTO mastertable (first_name, last_name, email, master_key, created_at, updated_at, is_active)
@@ -72,36 +72,36 @@ func InsertUserDataToDB(db *sql.DB, first_name string, last_name string,
 	masterPassword := gscan.GscanFromTerminal()
 
 	// Randomly generate master key for each user data insert to the masterkey table.
-	master_account_key := gpwmcrypto.GenerateAccountSecretKey()
-	master_account_key_byte := []byte(master_account_key)
-	encrypted_master_account_key, eerr := gpwmcrypto.EncryptKEKAES(master_account_key_byte, masterPassword, email)
+	masterAccountKey := gpwmcrypto.GenerateAccountSecretKey()
+	masterAccountKeyByte := []byte(masterAccountKey)
+	encryptedMasterAccountKey, eerr := gpwmcrypto.EncryptKEKAES(masterAccountKeyByte, masterPassword, email)
 	if eerr != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKEKAES ", eerr.Error())
 	}
 
-	time_now := time.Now().Unix()
-	created_at := strconv.FormatInt(time_now, 10)
-	updated_at := strconv.FormatInt(time_now, 10)
+	timeNow := time.Now().Unix()
+	createdAt := strconv.FormatInt(timeNow, 10)
+	updatedAt := strconv.FormatInt(timeNow, 10)
 
-	_, err := db.Exec(insertStatement, first_name, last_name, email, encrypted_master_account_key, created_at, updated_at, is_active)
+	_, err := db.Exec(insertStatement, firstName, lastName, email, encryptedMasterAccountKey, createdAt, updatedAt, is_active)
 	if err != nil {
 		glogger.Glog("masterkeymanager:InsertMasterKeyDataToDB:Exec ", err.Error())
 		return
 	}
 
-	gqrpdf.MasterKeyQRCodePDFGenerator(master_account_key, first_name, last_name)
+	gqrpdf.MasterKeyQRCodePDFGenerator(masterAccountKey, firstName, lastName)
 }
 
 // UpdateInfo updates the user database info if changed.
-func UpdateInfo(db *sql.DB, id int, first_name string, last_name string,
-	email string, master_key string, created_at string,
-	updated_at string, is_active bool) {
+func UpdateInfo(db *sql.DB, id int, firstName string, lastName string,
+	email string, masterKey string, createdAt string,
+	updatedAt string, isActive bool) {
 
 	updateStatement := `UPDATE mastertable 
 	SET first_name = $2, last_name = $3, email = $4, master_key = $5, created_at = $6, updated_at = $7, is_active = $8
 	WHERE id = $1;`
 
-	_, err := db.Exec(updateStatement, id, first_name, last_name, email, master_key, created_at, updated_at, is_active)
+	_, err := db.Exec(updateStatement, id, firstName, lastName, email, masterKey, createdAt, updatedAt, isActive)
 	if err != nil {
 		glogger.Glog("masterkeymanager:UpdateInfo:Exec ", err.Error())
 		return
@@ -153,9 +153,9 @@ func ResetMasterKey(db *sql.DB) error {
 	}
 
 	// Generate new account key or master key.
-	new_master_account_key := gpwmcrypto.GenerateAccountSecretKey()
+	newMasterAccountKey := gpwmcrypto.GenerateAccountSecretKey()
 	// Encrypt new master key.
-	encryptedText, err := gpwmcrypto.EncryptKEKAES([]byte(new_master_account_key), userdetail.password, emailId)
+	encryptedText, err := gpwmcrypto.EncryptKEKAES([]byte(newMasterAccountKey), userdetail.password, emailId)
 	if err != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:EncryptMasterKEKAES ", err.Error())
 		return err
@@ -173,7 +173,7 @@ func ResetMasterKey(db *sql.DB) error {
 	glogger.Glog("masterkeymanager:ResetMasterKey ", "You have successfully reset your master key")
 
 	// Generate QR Code with new master key
-	gqrpdf.MasterKeyQRCodePDFGenerator(new_master_account_key, userdetail.first_name, userdetail.last_name)
+	gqrpdf.MasterKeyQRCodePDFGenerator(newMasterAccountKey, userdetail.firstName, userdetail.lastName)
 	return err
 }
 
@@ -193,10 +193,10 @@ func GetUserDetails(db *sql.DB) (*userDetails, error) {
 		return nil, err
 	}
 
-	first_name := ""
-	last_name := ""
+	firstName := ""
+	lastName := ""
 	findNameById := fmt.Sprintf(`SELECT first_name, last_name FROM mastertable WHERE id in (%d)`, id)
-	err = db.QueryRow(findNameById).Scan(&first_name, &last_name)
+	err = db.QueryRow(findNameById).Scan(&firstName, &lastName)
 	if err != nil {
 		glogger.Glog("masterkeymanager:ResetMasterKey:QueryRow ", err.Error())
 		fmt.Println("Unable to retrieve name from the database.")
@@ -210,8 +210,8 @@ func GetUserDetails(db *sql.DB) (*userDetails, error) {
 	oldMasterKey := gscan.GscanFromTerminal()
 
 	userdetail := userDetails{}
-	userdetail.first_name = first_name
-	userdetail.last_name = last_name
+	userdetail.firstName = firstName
+	userdetail.lastName = lastName
 	userdetail.email = email
 	userdetail.password = password
 	userdetail.oldMasterkey = oldMasterKey
