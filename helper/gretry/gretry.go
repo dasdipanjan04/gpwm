@@ -9,7 +9,7 @@ package gretry
 
 import "errors"
 
-// maximum allowed attempts for retrying master key reset
+// MAXIMUMALLOWEDATTEMPTS : maximum allowed attempts for retrying master key reset
 var MAXIMUMALLOWEDATTEMPTS = 5
 
 var errMaxAttemptReached = errors.New("maximum allowed retry reached")
