@@ -16,14 +16,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type PsqlEnv struct {
-	host     string
-	port     int
-	user     string
-	password string
-	dbname   string
-}
-
+// GetPsqlenv gets the psql env
 func GetPsqlenv() string {
 
 	err := godotenv.Load(path.Join(os.Getenv("HOME"), "psql.env"))
@@ -33,6 +26,10 @@ func GetPsqlenv() string {
 	}
 
 	portVal, err := strconv.Atoi(os.Getenv("PSQLPORT"))
+	if err != nil {
+		glogger.Glog("connect:GetPsqlenv:Atoi ", err.Error())
+		return err.Error()
+	}
 
 	psqlConnect := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",

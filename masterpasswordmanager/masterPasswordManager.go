@@ -31,6 +31,7 @@ type userDetails struct {
 	oldMasterkey string
 }
 
+// CreateMasterKeyTable creates a mastertable if it doesn't exist.
 func CreateMasterKeyTable() *sql.DB {
 	createTable := `create table if not exists mastertable (
 		id SERIAL PRIMARY KEY,
@@ -58,6 +59,7 @@ func CreateMasterKeyTable() *sql.DB {
 	return db
 }
 
+// InsertUserDataToDB inserts new information to the database.
 func InsertUserDataToDB(db *sql.DB, first_name string, last_name string,
 	email string, is_active bool) {
 
@@ -90,6 +92,7 @@ func InsertUserDataToDB(db *sql.DB, first_name string, last_name string,
 	gqrpdf.MasterKeyQRCodePDFGenerator(master_account_key, first_name, last_name)
 }
 
+// UpdateInfo updates the user database info if changed.
 func UpdateInfo(db *sql.DB, id int, first_name string, last_name string,
 	email string, master_key string, created_at string,
 	updated_at string, is_active bool) {
@@ -105,7 +108,7 @@ func UpdateInfo(db *sql.DB, id int, first_name string, last_name string,
 	}
 }
 
-// Resets master key in the database.
+// ResetMasterKey resets master key in the database.
 func ResetMasterKey(db *sql.DB) error {
 
 	userdetail, err := GetUserDetails(db)
@@ -174,6 +177,7 @@ func ResetMasterKey(db *sql.DB) error {
 	return err
 }
 
+//GetUserDetails get the details of the user.
 func GetUserDetails(db *sql.DB) (*userDetails, error) {
 
 	fmt.Println("Reset your masterkey")

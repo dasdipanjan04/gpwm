@@ -7,7 +7,7 @@ import (
 	"github.com/johnfercher/maroto/pkg/props"
 )
 
-// Generate a pdf file with QRCoded Master Account Key
+// MasterKeyQRCodePDFGenerator generates a pdf file with QRCoded Master Account Key
 func MasterKeyQRCodePDFGenerator(masterKey string, firstName string, lastname string) {
 
 	qrpdf := pdf.NewMaroto(consts.Portrait, consts.Letter)

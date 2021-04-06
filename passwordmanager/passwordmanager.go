@@ -10,6 +10,7 @@ import (
 	"github.com/dasdipanjan04/gpwm/helper/glogger"
 )
 
+// CreatePasswordManagerTable creates a password manager table if it doesn't exist.
 func CreatePasswordManagerTable() *sql.DB {
 	createTable := `create table if not exists passwordmanagertable (
 		id SERIAL PRIMARY KEY,
@@ -36,6 +37,7 @@ func CreatePasswordManagerTable() *sql.DB {
 	return passwordmanager_db
 }
 
+// InsertEncryptedPasswordToDB inserts newly encrypted app password with user name to the database.
 func InsertEncryptedPasswordToDB(db_passmanager *sql.DB,
 	application_name string,
 	username string,
@@ -53,6 +55,7 @@ func InsertEncryptedPasswordToDB(db_passmanager *sql.DB,
 	return err
 }
 
+// EncryptApplicationPassword encrypts application password.
 func EncryptApplicationPassword(db_master *sql.DB,
 	db_passmanager *sql.DB,
 	masterPassword string,
@@ -87,6 +90,7 @@ func EncryptApplicationPassword(db_master *sql.DB,
 	return encrypted_app_password, err
 }
 
+// DecryptAppPassword decrypts the application password.
 func DecryptAppPassword(encrypted_app_password []byte, masterKey string, email string) (string, error) {
 	email = strings.Trim(email, "'")
 	dycryptAppPass, err := gpwmcrypto.DecryptAESKEK(encrypted_app_password, masterKey, email)

@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// GscanFromTerminal takes the termial input and returns a string.
 func GscanFromTerminal() string {
 	gscan := bufio.NewScanner(os.Stdin)
 	gscan.Scan()

@@ -10,12 +10,12 @@ import (
 	"github.com/dasdipanjan04/gpwm/helper/glogger"
 )
 
-// Generate a Key Encryption Key(KEK) using user provider secret password and some non-secret such as user account email address.
+// GenerateKEKHashSha256 generates a Key Encryption Key(KEK) using user provider secret password and some non-secret such as user account email address.
 func GenerateKEKHashSha256(password string, email string) [sha256.Size]byte {
 	return sha256.Sum256([]byte(password + email))
 }
 
-// Encrypt Actual Key By the KEK
+// EncryptKEKAES encrypts Actual Key By the KEK
 func EncryptKEKAES(data []byte, password string, email string) ([]byte, error) {
 
 	key := GenerateKEKHashSha256(password, email)

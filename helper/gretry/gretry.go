@@ -16,7 +16,7 @@ var errMaxAttemptReached = errors.New("maximum allowed retry reached")
 // RetryFunction
 type RetryFunction func(attempts int) error
 
-// Retry reset
+// Retry resets
 func Retry(retryFunc RetryFunction) error {
 
 	for ret := 1; ret < MAXIMUMALLOWEDATTEMPTS; ret++ {
